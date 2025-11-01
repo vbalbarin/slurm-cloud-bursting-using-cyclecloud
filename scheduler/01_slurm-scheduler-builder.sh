@@ -28,7 +28,11 @@ echo " "
 echo " Please Note down the above details for configuring cyclecloud UI"
 echo "------------------------------------------------------------------------------------------------------------------------------"
 
-sched_dir="/sched/$cluster_name"
+nfs_base_dir="/nfs" # nfs_base_dir="" in documentation
+sched_base_dir="${nfs_base_dir}/sched"
+shared_base_dir="${nfs_base_dir}/shared"
+
+sched_dir="${sched_base_dir}/$cluster_name"
 slurm_conf="$sched_dir/slurm.conf"
 munge_key="/etc/munge/munge.key"
 slurm_script_dir="/opt/azurehpc/slurm"
@@ -88,14 +92,14 @@ case "$OS_ID" in
         exit 1
         ;;
 esac
-mkdir -p /sched /shared
+mkdir -p "${sched_base_dir}" "${shared_base_dir}"
 
 # Define the file
 file="/etc/exports"
 
 # Add entries only if they don't exist
-grep -Fxq "/sched *(rw,sync,no_root_squash)" "$file" || echo "/sched *(rw,sync,no_root_squash)" >> "$file"
-grep -Fxq "/shared *(rw,sync,no_root_squash)" "$file" || echo "/shared *(rw,sync,no_root_squash)" >> "$file"
+grep -Fxq "${sched_base_dir} *(rw,sync,no_root_squash)" "$file" || echo "${sched_base_dir} *(rw,sync,no_root_squash)" >> "$file"
+grep -Fxq "${shared_base_dir} *(rw,sync,no_root_squash)" "$file" || echo "${shared_base_dir} *(rw,sync,no_root_squash)" >> "$file"
 
 echo "NFS exports setup complete."
 
@@ -297,7 +301,7 @@ SuspendProgram=/opt/azurehpc/slurm/suspend_program.sh
 SchedulerParameters=max_switch_wait=24:00:00
 # Only used with dynamic node partitions.
 MaxNodeCount=10000
-# This as the partition definitions managed by azslurm partitions > /sched/azure.conf
+# This as the partition definitions managed by azslurm partitions > ${sched_base_dir}/azure.conf
 Include azure.conf
 # If slurm.accounting.enabled=true this will setup slurmdbd
 # otherwise it will just define accounting_storage/none as the plugin
@@ -353,7 +357,7 @@ echo "--------------------------------------------------------------------------
 echo " "
 echo "------------------------------------------------------------------------------------------------------------------------------"
 echo " Go to CycleCloud Portal and edit the $cluster_name cluster configuration to use the external scheduler and start the cluster."
-echo " Use $ip_address IP Address for File-system Mount for /sched and /shared in Network Attached Storage section in CycleCloud GUI "
+echo " Use $ip_address IP Address for File-system Mount for ${sched_base_dir} and ${shared_base_dir} in Network Attached Storage section in CycleCloud GUI "
 echo " Once the cluster is started, proceed to run  cyclecloud-integrator.sh script to complete the integration with CycleCloud."
 echo "------------------------------------------------------------------------------------------------------------------------------"
 echo " "
