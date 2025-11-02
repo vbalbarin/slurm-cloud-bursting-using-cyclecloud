@@ -16,8 +16,11 @@ read -p "Enter User Name: " username
 gid=20001
 uid=20001
 
-mkdir -p /shared/home/
-chmod 755 /shared/home/
+nfs_base_dir="/nfs" # nfs_base_dir="" in documentation
+shared_base_dir="${nfs_base_dir}/shared"
+
+mkdir -p ${shared_base_dir}/home/
+chmod 755 ${shared_base_dir}/home/
 
 # Create group if not exists
 if ! getent group $gid >/dev/null; then
@@ -25,13 +28,13 @@ if ! getent group $gid >/dev/null; then
 fi
 
 # Create user with specified uid, gid, home directory, and shell
-mkdir -p /shared/home/$username
-useradd -g $gid -u $uid -d /shared/home/$username -s /bin/bash $username
-chown -R $username:$username /shared/home/$username
+mkdir -p ${shared_base_dir}/home/$username
+useradd -g $gid -u $uid -d ${shared_base_dir}/home/$username -s /bin/bash $username
+chown -R $username:$username ${shared_base_dir}/home/$username
 
 # Switch to user to perform directory and file operations
-su - $username -c "mkdir -p /shared/home/$username/.ssh"
-su - $username -c "ssh-keygen -t rsa -N '' -f /shared/home/$username/.ssh/id_rsa"
-su - $username -c "cat /shared/home/$username/.ssh/id_rsa.pub >> /shared/home/$username/.ssh/authorized_keys"
-su - $username -c "chmod 600 /shared/home/$username/.ssh/authorized_keys"
-su - $username -c "chmod 700 /shared/home/$username/.ssh"
+su - $username -c "mkdir -p ${shared_base_dir}/home/$username/.ssh"
+su - $username -c "ssh-keygen -t rsa -N '' -f ${shared_base_dir}/home/$username/.ssh/id_rsa"
+su - $username -c "cat ${shared_base_dir}/home/$username/.ssh/id_rsa.pub >> ${shared_base_dir}/home/$username/.ssh/authorized_keys"
+su - $username -c "chmod 600 ${shared_base_dir}/home/$username/.ssh/authorized_keys"
+su - $username -c "chmod 700 ${shared_base_dir}/home/$username/.ssh"

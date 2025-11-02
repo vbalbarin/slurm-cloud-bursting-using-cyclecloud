@@ -48,7 +48,8 @@ echo "--------------------------------------------------------------------------
 
 slurm_autoscale_pkg="azure-slurm-pkg-$slurm_autoscale_pkg_version.tar.gz"
 slurm_script_dir="/opt/azurehpc/slurm"
-config_dir="/sched/$cluster_name"
+nfs_base_dir="/nfs" # nfs_base_dir="" in documentation
+config_dir="${nfs_base_dir}/sched/$cluster_name"
 
 # Create necessary directories
 mkdir -p "$slurm_script_dir"
