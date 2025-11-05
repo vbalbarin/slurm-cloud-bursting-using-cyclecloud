@@ -22,28 +22,34 @@ Before proceeding, ensure you have the following requirements in place:
 
 
 - Ensure CycleCloud VM is running and accessible via `cyclecloud` CLI.
+- `cyclecloud initialize`
 - Clone this repository and run the `sh 01_prep_cyclecloud-slurm_template.sh` script in the cyclecloud directory.
-- `sh 01_prep_cyclecloud-slurm_template.sh` give the CycleCloud project version, Slurm version and cyclecloud-slurm template to build the Cloud busting setup.
 
 ```bash
-git clone https://github.com/vinil-v/slurm-cloud-bursting-using-cyclecloud.git
+git clone https://github.com/vbalbarin/slurm-cloud-bursting-using-cyclecloud.git
 cd slurm-cloud-bursting-using-cyclecloud/cyclecloud/
+```
+
+- Execute `01_prep_cyclecloud-slurm_template.sh` to generate the cluster template file.
+
+```bash
 sh 01_prep_cyclecloud-slurm_template.sh
 ```
 
 Output :
 
 ```bash
-[vinil@ccvm cyclecloud]$ sh 01_prep_cyclecloud-slurm_template.sh 
-Project version: 3.0.10
+[srvadmin@cyclecloud-vm cyclecloud]$ sh 01_prep_cyclecloud-slurm_template.sh 
+Project version: 3.0.12
 Slurm version:  24.05.4-2
-Template location : slurm-3.0.10/templates/slurm-headless.txt
+Template location : slurm-3.0.12/templates/slurm-headless.txt
 Please refer README for customizing the template for Headless Slurm cluster
-[vinil@ccvm cyclecloud]$ 
+[srvadmin@cyclecloud-vm cyclecloud]$ 
 ```
-This above output shows the Cyclecloud-Slurm Project version available in your cyclecloud enviorment, supported slurm version in the project and the template for creating headless slurm cluster.
 
-- Edit the template from the given template location (`Template location : slurm-3.0.10/templates/slurm-headless.txt`) using your favorite edior and make the following adjustment to create a headless template.
+The above output shows the Cyclecloud-Slurm Project version available in your cyclecloud enviorment, supported slurm version in the project and the template for creating headless slurm cluster.
+
+- Edit the template from the given template location (`Template location : slurm-3.0.12/templates/slurm-headless.txt`) using your favorite editor and make the following adjustment to create a headless template.
 - Ensure that the `slurm` and `munge` UID and GID are included in the template under the `[[node defaults]]` and `[[[configuration]]]` sections if they are not already present. This ensures consistency with the scheduler's UID and GID for `munge` and `slurm`.
 
 ```bash    
@@ -77,7 +83,7 @@ This above output shows the Cyclecloud-Slurm Project version available in your c
 ```
 
 
-- Once the headless template is prepared then run `sh 02_cyclecloud_build_cluster.sh` script to import the headless cluster to cyclecloud.
+- Once the headless template is prepared then run `02_cyclecloud_build_cluster.sh` script to import the headless cluster to cyclecloud.
 - in this example we use `hpc10` as the cluster name.
 
 ```bash
@@ -87,7 +93,7 @@ sh 02_cyclecloud_build_cluster.sh
 Output:
 
 ```bash
-[vinil@ccvm cyclecloud]$ sh 02_cyclecloud_build_cluster.sh 
+[srvadmin@cyclecloud-vm cyclecloud]$ sh 02_cyclecloud_build_cluster.sh 
 Enter Cluster Name: hpc10
 Cluster Name: hpc10
 Importing Cluster
@@ -101,7 +107,7 @@ Total nodes: 0
 Cluster Name: hpc10
 Project version: 3.0.10
 Slurm version:  24.05.4-2
-[vinil@ccvm cyclecloud]$ 
+[srvadmin@cyclecloud-vm cyclecloud]$ 
 ```
 
 Please make a note of the Cluster Name, Project version and Slurm version. which you will be using the next steps.
@@ -110,14 +116,64 @@ Please make a note of the Cluster Name, Project version and Slurm version. which
 ### 2. Preparing Scheduler VM:
 
 - Deploy a VM using the supported AlmaLinux HPC or Ubuntu HPC image.
-- Run the Slurm scheduler installation script (`sh 01_slurm-scheduler-builder.sh`) and provide the `cluster name` and the `slurm version` when prompted.
+- This example uses the Microsoft Ubuntu 22.04 LTS HPC image.
+- Install Git
+- Clone repositoery
+
+```bash
+git clone https://github.com/vbalbarin/slurm-cloud-bursting-using-cyclecloud.git
+cd  slurm-cloud-bursting-using-cyclecloud/scheduler/
+```
+
+- Create a new test user in CycleCloud `hpcuser01`.
+Leave the SSH public key for now. However, take note of the generated `uid`.
+- In this example we are using the `useradd_example.sh` script to create a test user `hpcuser01` and group for job submission.
+
+(Note, it would be preferable to use a centralized system such as LDAP/Active Directory to ensure consistent provisioning of UID and GID across the nodes.)
+
+```bash
+cd slurm-cloud-bursting-using-cyclecloud/scheduler
+sudo sh useradd_example.sh
+```
+Output:
+
+```bash
+[root@scheduler scheduler]# sh useradd_example.sh 
+Enter CycleCloud User Name: hpcuser01
+Enter CycleCloud UID: 20001
+Enter CycleCloud GID: 20001
+useradd: warning: the home directory already exists.
+Not copying any file from skel directory into it.
+Generating public/private rsa key pair.
+Your identification has been saved in /shared/home/hpcuser01/.ssh/id_rsa.
+Your public key has been saved in /shared/home/hpcuser01/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:MNPOxu1XRRxZfQmjM0r6+snEm+d1grcjkEGS1CCpJ9Q hpcuser01@scheduler
+The key's randomart image is:
++---[RSA 3072]----+
+|    ..oo+    o.oO|
+|   . E.+ o  . .++|
+|  . . + +. +    o|
+|   o . Boo. o  . |
+|    o  .S.+   .  |
+|       .o+  ..   |
+|         +o..+ . |
+|        + ++o.+  |
+|       ..*o....  |
++----[SHA256]-----+
+Changing password for user hpcuser01.
+New password: 
+Retype new password: 
+passwd: all authentication tokens updated successfully.
+```
+
+
+- Run the Slurm scheduler installation script (`01_slurm-scheduler-builder.sh`) and provide the `cluster name` and the `slurm version` when prompted.
 - Cluster Name and Slurm version should be same taken from the previous step.
 - This script will install and configure Slurm Scheduler.
 
 ```bash
-git clone https://github.com/vinil-v/slurm-cloud-bursting-using-cyclecloud.git
-cd  slurm-cloud-bursting-using-cyclecloud/scheduler/
-sh 01_slurm-scheduler-builder.sh
+sudo sh 01_slurm-scheduler-builder.sh
 ```
 
 Output: 
@@ -169,22 +225,35 @@ Slurm configured
 
 ### 3. CycleCloud UI:
 
-- Access the CycleCloud UI, edit the `hpc10` cluster settings, and Select VM SKUs as per your requirement and Select the `Subnet` Networking settings.
-- Select the Appropriate  OS Images for HPC or HTC nodearray ( Select the exact same OS version of the Scheduler VM) under `Advanced Settings`. 
-- disable the `Return Proxy`.
-- Enter the NFS server IP address for `/sched` and `/shared` mounts in the Network Attached Storage section.
-- Save & Start `hpc10` cluster
+- Access the CycleCloud UI
+- Update the public key for the `hpcuser01` under **Users** from the scheduler VM. (Click the "gear" icon.)
+- Grant **Access** to the `hpcuser01`
+- Edit the `hpc10` cluster settings.
+- Under **Required Settings**
+  - **Virtual Machines**: Select VM SKUs as per your requirements
+  - **Networking**: Select the apppropriate subnet for **Subnet ID**.
+- Under **Network Attached Storage**
+    - Uncheck **Use Builtin NFS**.
+    Enter the NFS server IP address for `/sched`
+    - Uncheck **Use Builtin NFS**.
+    Enter the NFS Server IP address for `/shared`
+- Under **Advanced Settings**
+    - Select the appropriate OS images for HPC or HTC nodearray.
+    (Note, these should be the same OS image as that of the scheduler VM.)
+    - Uncheck the `Return Proxy`.
+- Save the settings.
+- Start `hpc10` cluster
 
 ![NFS settings](images/NFSSettings.png)
 
 ### 4. On Slurm Scheduler Node:
 
-- Integrate Slurm scheduler with CycleCloud using the `sh 02_cyclecloud-integrator.sh` script.
+- Integrate Slurm scheduler with CycleCloud using the `02_cyclecloud-integrator.sh` script.
 - Provide CycleCloud details (username, password, and URL) when prompted.
 
 ```bash
 cd  slurm-cloud-bursting-using-cyclecloud/scheduler/
-sh sh 02_cyclecloud-integrator.sh
+sudo sh 02_cyclecloud-integrator.sh
 ```
 Output:
 
@@ -193,7 +262,7 @@ Output:
 Please enter the CycleCloud details to integrate with the Slurm scheduler
  
 Enter Cluster Name: hpc10
-Enter CycleCloud Username: vinil
+Enter CycleCloud Username: hpcadmin
 Enter CycleCloud Password: 
 Enter the Project version: 3.0.10
 Enter CycleCloud URL (e.g., https://10.0.0.1): https://xx.xxx.x.x
@@ -201,7 +270,7 @@ Enter CycleCloud URL (e.g., https://10.0.0.1): https://xx.xxx.x.x
  
 Summary of entered details:
 Cluster Name: hpc10
-CycleCloud Username: vinil
+CycleCloud Username: hpcadmin
 CycleCloud URL: https://xx.xxx.x.x
  
 ------------------------------------------------------------------------------------------------------------------------------
@@ -213,59 +282,26 @@ Configuring virtual enviornment and Activating Python virtual environment
 ------------------------------------------------------------------------------------------------------------------------------
 ```
 
-### 5. User and Group Setup:
 
-- Ensure consistent user and group IDs across all nodes.
-- Better to use a centralized User Management system like LDAP to ensure the UID and GID are consistent across all the nodes.
-- In this example we are using the `useradd_example.sh` script to create a test user `user1` and group for job submission. (User `user1` is exist in CycleCloud)
-
-```bash
-cd slurm-cloud-bursting-using-cyclecloud/scheduler
-sh useradd_example.sh
-```
-Output:
-
-```bash
-[root@scheduler scheduler]# sh useradd_example.sh 
-Enter User Name: user1
-Generating public/private rsa key pair.
-Your identification has been saved in /shared/home/user1/.ssh/id_rsa.
-Your public key has been saved in /shared/home/user1/.ssh/id_rsa.pub.
-The key fingerprint is:
-SHA256:dURAjAhAQqTHNp3VnhyaeRyVk36OirzfatWk/8+onLw user1@scheduler
-The key's randomart image is:
-+---[RSA 3072]----+
-|++o....o =+=o    |
-|.o . o. = =.     |
-|. = o  B =...    |
-| o .  + *...o    |
-|       .S  B     |
-|          + o    |
-|     . . o .     |
-|      o o. o.. o |
-|      .+o.. E+o.o|
-+----[SHA256]-----+
-[root@scheduler scheduler]# 
-```
 ### 6. Testing & Job Submission:
 
-- Log in as a test user (`user1` in this example) on the Scheduler node.
+- Log in as a test user (`hpcuser01` in this example) on the Scheduler node.
 - Submit a test job to verify the setup.
 
 ```bash
-su - user1
+su - hpcuser01
 srun hostname &
 ```
 Output:
 ```bash
-[root@scheduler scheduler]# su - user1
+[root@scheduler scheduler]# su - hpcuser01
 Last login: Tue Feb 11 08:55:50 UTC 2025 on pts/0
-[vinil@scheduler ~]$ srun hostname &
+[srvadmin@scheduler ~]$ srun hostname &
 [1] 47480
-[vinil@scheduler ~]$ squeue 
+[srvadmin@scheduler ~]$ squeue 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
-                 1       hpc hostname    user1 CF       0:03      1 hpc10-hpc-1
-[vinil@scheduler ~]$ 
+                 1       hpc hostname    hpcuser01 CF       0:03      1 hpc10-hpc-1
+[srvadmin@scheduler ~]$ 
 ```
 ![Node Creation](images/nodecreation.png)
 
