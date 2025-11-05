@@ -12,9 +12,14 @@ if [ $(whoami) != root ]; then
 fi
 
 # test user details
-read -p "Enter User Name: " username
-gid=20001
-uid=20001
+read -p "Enter User Name [hpcadmin]: " username
+read -p "Enter UID from CycleCloud [20001]: " uid
+# read -p "Enter GID from CycleCloud [20001]: " gid
+
+[[ "$username" == "" ]] && username='hpcadmin'
+[[ "$uid" == "" ]] && uid='20001'
+
+gid=$uid
 
 mkdir -p /shared/home/
 chmod 755 /shared/home/
