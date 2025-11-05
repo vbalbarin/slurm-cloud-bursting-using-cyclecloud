@@ -40,3 +40,5 @@ su - $username -c "ssh-keygen -t ed25519 -N '' -f /shared/home/$username/.ssh/id
 su - $username -c "cat /shared/home/$username/.ssh/id_ed25519.pub >> /shared/home/$username/.ssh/authorized_keys"
 su - $username -c "chmod 600 /shared/home/$username/.ssh/authorized_keys"
 su - $username -c "chmod 700 /shared/home/$username/.ssh"
+
+passwd $username
