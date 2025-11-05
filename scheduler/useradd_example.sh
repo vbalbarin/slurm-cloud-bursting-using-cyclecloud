@@ -16,8 +16,8 @@ read -p "Enter User Name [hpcadmin]: " username
 read -p "Enter UID from CycleCloud [20001]: " uid
 # read -p "Enter GID from CycleCloud [20001]: " gid
 
-[[ "$username" == "" ]] && username='hpcadmin'
-[[ "$uid" == "" ]] && uid='20001'
+if [ "$username" = "" ]; then username='hpcadmin'; fi
+if [ "$uid" =  "" ]; then uid='20001'; fi
 
 gid=$uid
 
@@ -41,4 +41,7 @@ su - $username -c "cat /shared/home/$username/.ssh/id_ed25519.pub >> /shared/hom
 su - $username -c "chmod 600 /shared/home/$username/.ssh/authorized_keys"
 su - $username -c "chmod 700 /shared/home/$username/.ssh"
 
+echo
+echo ########
+echo 
 passwd $username
