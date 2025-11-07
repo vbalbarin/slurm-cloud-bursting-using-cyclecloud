@@ -289,20 +289,38 @@ Configuring virtual enviornment and Activating Python virtual environment
 
 ```bash
 su - hpcuser01
-srun hostname &
+```
+
+```bash
+tee hello_world.sh<<'_EOF'
+#!/usr/bin/env bash
+#SBATCH --job-name=hello_world      # Job name to identify
+#SBATCH --output=hello_world_%j_%N.out    # Output file
+#SBATCH --partition=hpc                    # Partition name to use
+#SBATCH --nodes=1                            # Number of nodes 
+#SBATCH --ntasks=1                            # Number of tasks 
+#SBATCH --time=00:05:00                   # Max runtime (HH:MM:SS)
+
+echo "Hello World from $SLURMD_NODENAME"
+_EOF
+```
+
+```bash
+sbatch hello_world.sh
 ```
 
 Output:
 
 ```bash
-[root@scheduler scheduler]# su - hpcuser01
+
+[srvadmin@scheduler scheduler]# su - hpcuser01
 Last login: Tue Feb 11 08:55:50 UTC 2025 on pts/0
-[srvadmin@scheduler ~]$ srun hostname &
-[1] 47480
-[srvadmin@scheduler ~]$ squeue 
+[hpcuser01@scheduler ~]$ sbatch hello_world.sh
+Submitted batch job 1
+[hpcuser01@scheduler ~]$ squeue 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
                  1       hpc hostname    hpcuser01 CF       0:03      1 hpc10-hpc-1
-[srvadmin@scheduler ~]$ 
+[hpcuser01@scheduler ~]$ 
 ```
 
 In the CycleCloud web page, you should see a node spinning up:
@@ -312,9 +330,23 @@ In the CycleCloud web page, you should see a node spinning up:
 Upon completion:
 
 ```bash
-hpcuser01@vmsc01:~$ hpc10-hpc-1
+hpcuser01@scheduler:~$ ls
+```
 
-[1]+  Done                    srun hostname
+Output:
+
+```bash
+hello_world.sh hello_world_1_hpc10-hpc-1.out
+```
+
+```bash
+cat hello_world_1_hpc10-hpc-1.out
+```
+
+Output:
+
+```bash
+Hello World from hpc10-hpc-1
 ```
 
 For further details and advanced configurations, refer to the scripts and documentation within this repository.
