@@ -12,9 +12,14 @@ if [ $(whoami) != root ]; then
 fi
 
 # test user details
-read -p "Enter User Name: " username
-gid=20001
-uid=20001
+read -p "Enter User Name [hpcadmin]: " username
+read -p "Enter UID from CycleCloud [20001]: " uid
+# read -p "Enter GID from CycleCloud [20001]: " gid
+
+if [ "$username" = "" ]; then username='hpcadmin'; fi
+if [ "$uid" =  "" ]; then uid='20001'; fi
+
+gid=$uid
 
 mkdir -p /shared/home/
 chmod 755 /shared/home/
@@ -31,7 +36,12 @@ chown -R $username:$username /shared/home/$username
 
 # Switch to user to perform directory and file operations
 su - $username -c "mkdir -p /shared/home/$username/.ssh"
-su - $username -c "ssh-keygen -t rsa -N '' -f /shared/home/$username/.ssh/id_rsa"
-su - $username -c "cat /shared/home/$username/.ssh/id_rsa.pub >> /shared/home/$username/.ssh/authorized_keys"
+su - $username -c "ssh-keygen -t ed25519 -N '' -f /shared/home/$username/.ssh/id_ed25519"
+su - $username -c "cat /shared/home/$username/.ssh/id_ed25519.pub >> /shared/home/$username/.ssh/authorized_keys"
 su - $username -c "chmod 600 /shared/home/$username/.ssh/authorized_keys"
 su - $username -c "chmod 700 /shared/home/$username/.ssh"
+
+echo
+echo ########
+echo 
+passwd $username
