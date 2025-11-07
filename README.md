@@ -139,32 +139,31 @@ Output:
 
 ```bash
 [root@scheduler scheduler]# sh useradd_example.sh 
-Enter CycleCloud User Name: hpcuser01
-Enter CycleCloud UID: 20001
-Enter CycleCloud GID: 20001
-useradd: warning: the home directory already exists.
-Not copying any file from skel directory into it.
-Generating public/private rsa key pair.
-Your identification has been saved in /shared/home/hpcuser01/.ssh/id_rsa.
-Your public key has been saved in /shared/home/hpcuser01/.ssh/id_rsa.pub.
+Enter User Name [hpcadmin]: hpcuser01
+Enter UID from CycleCloud [20001]: 20002
+Generating public/private ed25519 key pair.
+Your identification has been saved in /shared/home/hpcuser01/.ssh/id_ed25519
+Your public key has been saved in /shared/home/hpcuser01/.ssh/id_ed25519.pub
 The key fingerprint is:
-SHA256:MNPOxu1XRRxZfQmjM0r6+snEm+d1grcjkEGS1CCpJ9Q hpcuser01@scheduler
+SHA256:wFalNZlRTjwQWoZDlzFLJTBdKZLEsnDc8QSRLJu7J0g hpcuser01@scheduler-vm
 The key's randomart image is:
-+---[RSA 3072]----+
-|    ..oo+    o.oO|
-|   . E.+ o  . .++|
-|  . . + +. +    o|
-|   o . Boo. o  . |
-|    o  .S.+   .  |
-|       .o+  ..   |
-|         +o..+ . |
-|        + ++o.+  |
-|       ..*o....  |
++--[ED25519 256]--+
+|     . *X@^&=.   |
+|    ..=.X%*B+    |
+|     o+*ooo...   |
+|     .+.         |
+|       .S        |
+|    E .          |
+|   . . .         |
+|    . o .        |
+|       o         |
 +----[SHA256]-----+
-Changing password for user hpcuser01.
+
+
+
 New password: 
 Retype new password: 
-passwd: all authentication tokens updated successfully.
+passwd: password updated successfully
 ```
 
 
@@ -264,7 +263,7 @@ Please enter the CycleCloud details to integrate with the Slurm scheduler
 Enter Cluster Name: hpc10
 Enter CycleCloud Username: hpcadmin
 Enter CycleCloud Password: 
-Enter the Project version: 3.0.10
+Enter the Project version: 3.0.12
 Enter CycleCloud URL (e.g., https://10.0.0.1): https://xx.xxx.x.x
 ------------------------------------------------------------------------------------------------------------------------------
  
@@ -285,14 +284,16 @@ Configuring virtual enviornment and Activating Python virtual environment
 
 ### 6. Testing & Job Submission:
 
-- Log in as a test user (`hpcuser01` in this example) on the Scheduler node.
+- Log in as a test user (`hpcuser01` in this example) on the scheduler node.
 - Submit a test job to verify the setup.
 
 ```bash
 su - hpcuser01
 srun hostname &
 ```
+
 Output:
+
 ```bash
 [root@scheduler scheduler]# su - hpcuser01
 Last login: Tue Feb 11 08:55:50 UTC 2025 on pts/0
@@ -303,9 +304,18 @@ Last login: Tue Feb 11 08:55:50 UTC 2025 on pts/0
                  1       hpc hostname    hpcuser01 CF       0:03      1 hpc10-hpc-1
 [srvadmin@scheduler ~]$ 
 ```
+
+In the CycleCloud web page, you should see a node spinning up:
+
 ![Node Creation](images/nodecreation.png)
 
-You should see the job running successfully, indicating a successful integration with CycleCloud.
+Upon completion:
+
+```bash
+hpcuser01@vmsc01:~$ hpc10-hpc-1
+
+[1]+  Done                    srun hostname
+```
 
 For further details and advanced configurations, refer to the scripts and documentation within this repository.
 
