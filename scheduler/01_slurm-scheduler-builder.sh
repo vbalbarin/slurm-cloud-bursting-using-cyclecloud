@@ -128,7 +128,7 @@ case "$OS_ID" in
         cat <<EOF > /etc/yum.repos.d/slurm.repo
 [slurm]
 name=Slurm Workload Manager
-baseurl=https://packages.microsoft.com/yumrepos/slurm-el8-insiders
+baseurl=https://packages.microsoft.com/yumrepos/slurm-el${OS_VERSION}-insiders
 enabled=1
 gpgcheck=1
 gpgkey=https://packages.microsoft.com/keys/microsoft.asc
